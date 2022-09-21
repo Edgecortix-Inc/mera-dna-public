@@ -201,6 +201,12 @@ inline std::ostream& operator<<(std::ostream& os, const Upsampling& n) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const UpsamplingFp& n) {
+  os << "Upsampling(input=" << n.input.id << ", output=" << n.output.id;
+  os << ", method=" << n.method << ")";
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const MaxPool2d& n) {
   os << "MaxPool2d(input=" << n.input.id << ", output=" << n.output.id;
   return os;
@@ -233,6 +239,40 @@ inline std::ostream& operator<<(std::ostream& os, const HSwish& n) {
   os << ", input_zero_point=" << n.input_zero_point;
   os << ", output_scale=" << n.output_scale;
   os << ", output_zero_point=" << n.output_zero_point;
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Concatenate& n) {
+  os << "Concatenate(";
+  os << "output=" << n.output.id;
+  os << ", inputs=[";
+  for (const auto& input : n.inputs) {
+    os << input.id << ",";
+  }
+  os << "]";
+  os << ", axis=" << n.axis << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Fc& n) {
+  os << "FC(input=" << n.input.id << ", output=" << n.output.id;
+  os << ", input_scale=" << n.input_scale << ", input_zero_point=" << n.input_zero_point;
+  os << ", weight_scale=" << n.weight_scale << ", weight_zero_point=" << n.weight_zero_point;
+  os << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const AvgPooling2d& n) {
+  os << "AvgPooling2d(input=" << n.input.id << ", output=" << n.output.id;
+  os << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Mean& n) {
+  os << "Mean(input=" << n.input.id << ", output=" << n.output.id;
+  os << ", input_scale=" << n.input_scale << ", input_zero_point=" << n.input_zero_point;
+  os << ", output_scale=" << n.output_scale << ", output_zero_point=" << n.output_zero_point;
+  os << ")";
   return os;
 }
 

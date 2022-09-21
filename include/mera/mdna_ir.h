@@ -214,6 +214,23 @@ struct QuantizedConv2d {
   NOP_STRUCTURE(QuantizedConv2d, dilations, padding, strides, groups,
                 output_channels, input, weight, input_scale, input_zero_point,
                 weight_scale, weight_zero_point, output);
+
+  // methods
+  inline int GetInputChannels() const {
+    return weight.shape.shape[1];
+  }
+
+  inline bool IsDepthwiseConv() const {
+    return groups > 1 && groups == output_channels && GetInputChannels() == 1;
+  }
+
+  inline bool IsGroupConv() const {
+    return groups > 1 && !IsDepthwiseConv();
+  }
+
+  inline bool IsPointwiseConv() const {
+    return groups == 1;
+  }
 };
 
 struct QuantizedAdd {
@@ -297,6 +314,14 @@ struct Upsampling {
                 coordinate_transformation_mode, output);
 };
 
+struct UpsamplingFp {
+  Tensor input;
+  std::string method;
+  std::string coordinate_transformation_mode;
+  Tensor output;
+  NOP_STRUCTURE(UpsamplingFp, input, method, coordinate_transformation_mode, output);
+};
+
 struct MaxPool2d {
   Tensor input;
   int pool_height;
@@ -344,6 +369,46 @@ struct HSwish {
                 output_zero_point, output);
 };
 
+struct Concatenate {
+  std::vector<Tensor> inputs;
+  int axis;
+  Tensor output;
+  NOP_STRUCTURE(Concatenate, inputs, axis, output);
+};
+
+struct Fc {
+  Tensor input;
+  Tensor weights;
+  Tensor input_scale;
+  Tensor input_zero_point;
+  Tensor weight_scale;
+  Tensor weight_zero_point;
+  Tensor bias;
+  Tensor output_scale;
+  Tensor output_zero_point;
+  Tensor output;
+  NOP_STRUCTURE(Fc, input, weights,
+                input_scale, input_zero_point, weight_scale,
+                weight_zero_point, bias, output_scale, output_zero_point, output);
+};
+
+struct AvgPooling2d {
+  Tensor input;
+  Tensor output;
+  NOP_STRUCTURE(AvgPooling2d, input, output);
+};
+
+struct Mean {
+  Tensor input;
+  Tensor input_scale;
+  Tensor input_zero_point;
+  Tensor output_scale;
+  Tensor output_zero_point;
+  Tensor output;
+  NOP_STRUCTURE(Mean, input, input_scale, input_zero_point,
+                output_scale, output_zero_point, output);
+};
+
 struct OutputNode {
   std::vector<Tensor> outputs;
   NOP_STRUCTURE(OutputNode, outputs);
@@ -354,7 +419,8 @@ struct Graph {
                        Quantize, Dequantize, Conv2d, Clip, QuantizedConv2d,
                        QuantizedAdd, QuantizedMul, Requantize, BiasAdd, Cast,
                        Pad, Int8VecConstant, Upsampling, OutputNode, MaxPool2d,
-                       LeakyReLU, SiLU, HSwish>
+                       LeakyReLU, SiLU, HSwish, Fc, AvgPooling2d, Mean, Concatenate,
+                       UpsamplingFp>
       Operator;
 
   std::vector<Operator> operators;
