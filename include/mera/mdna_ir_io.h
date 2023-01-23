@@ -64,6 +64,11 @@ inline std::ostream& operator<<(std::ostream& os, const Tensor& n) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const QuantizationParameter &n) {
+  os << "QParam{" << n.scale << "," << n.zero_point << "}";
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const Var& n) {
   os << "Var(output=" << n.output << ")";
   return os;
@@ -273,6 +278,27 @@ inline std::ostream& operator<<(std::ostream& os, const Mean& n) {
   os << ", input_scale=" << n.input_scale << ", input_zero_point=" << n.input_zero_point;
   os << ", output_scale=" << n.output_scale << ", output_zero_point=" << n.output_zero_point;
   os << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const LeakyReLUFp &n) {
+  os << "LeakyReLU(input=" << n.input.id << ", output=" << n.output.id << ", slope=" << n.negative_slope << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const SiLUFp &n) {
+  os << "LeakyReLU(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HSwishFp &n) {
+  os << "LeakyReLU(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const HardTanh &n) {
+  os << "HardTanh(input=" << n.input.id << ", output=" << n.output.id
+    << ", min_val=" << n.min_val << ", max_val=" << n.max_val << ")";
   return os;
 }
 

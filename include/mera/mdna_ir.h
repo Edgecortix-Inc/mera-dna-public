@@ -72,6 +72,15 @@ struct Tensor {
   NOP_STRUCTURE(Tensor, type, shape, id);
 };
 
+struct QuantizationParameter {
+  float scale;
+  int zero_point;
+  NOP_STRUCTURE(QuantizationParameter, scale, zero_point);
+
+  QuantizationParameter(float scale, int zero_point): scale(scale), zero_point(zero_point) {}
+  QuantizationParameter(): QuantizationParameter(1.0, 0) {}
+};
+
 struct Var {
   // outputs
   Tensor output;
@@ -345,6 +354,13 @@ struct LeakyReLU {
                 output_zero_point, negative_slope, output);
 };
 
+struct LeakyReLUFp {
+  Tensor input;
+  double negative_slope;
+  Tensor output;
+  NOP_STRUCTURE(LeakyReLUFp, input, negative_slope, output);
+};
+
 struct SiLU {
   Tensor input;
   Tensor input_scale;
@@ -358,6 +374,12 @@ struct SiLU {
                 sigmoid_zero_point, output_scale, output_zero_point, output);
 };
 
+struct SiLUFp {
+  Tensor input;
+  Tensor output;
+  NOP_STRUCTURE(SiLUFp, input, output);
+};
+
 struct HSwish {
   Tensor input;
   Tensor input_scale;
@@ -367,6 +389,20 @@ struct HSwish {
   Tensor output;
   NOP_STRUCTURE(HSwish, input, input_scale, input_zero_point, output_scale,
                 output_zero_point, output);
+};
+
+struct HSwishFp {
+  Tensor input;
+  Tensor output;
+  NOP_STRUCTURE(HSwishFp, input, output);
+};
+
+struct HardTanh {
+  Tensor input;
+  float min_val;
+  float max_val;
+  Tensor output;
+  NOP_STRUCTURE(HardTanh, input, min_val, max_val, output);
 };
 
 struct Concatenate {
@@ -420,10 +456,11 @@ struct Graph {
                        QuantizedAdd, QuantizedMul, Requantize, BiasAdd, Cast,
                        Pad, Int8VecConstant, Upsampling, OutputNode, MaxPool2d,
                        LeakyReLU, SiLU, HSwish, Fc, AvgPooling2d, Mean, Concatenate,
-                       UpsamplingFp>
+                       UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh>
       Operator;
 
   std::vector<Operator> operators;
+  std::map<std::string, std::vector<QuantizationParameter>> qtz_info;
 
   template <class Op, class... Args>
   Tensor Add(const std::string& name, DataType type, const Shape& shape,
@@ -455,7 +492,7 @@ struct Graph {
                                 {{size}, 1, size}, values);
   }
 
-  NOP_STRUCTURE(Graph, operators);
+  NOP_STRUCTURE(Graph, operators, qtz_info);
   int next_id_{0};
 };
 
