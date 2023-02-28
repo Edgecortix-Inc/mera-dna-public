@@ -186,6 +186,25 @@ struct Conv2d {
                 input, weight, output);
 };
 
+struct TransConv2d {
+  Dilations dilations;
+  Padding padding;
+  Strides strides;
+
+  int groups;
+  int output_channels;
+
+  // inputs
+  Tensor input;
+  Tensor weight;
+
+  // outputs
+  Tensor output;
+
+  NOP_STRUCTURE(TransConv2d, dilations, padding, strides, groups, output_channels,
+                input, weight, output);
+};
+
 struct Clip {
   // attributes
   float min_value;
@@ -221,6 +240,48 @@ struct QuantizedConv2d {
   Tensor output;
 
   NOP_STRUCTURE(QuantizedConv2d, dilations, padding, strides, groups,
+                output_channels, input, weight, input_scale, input_zero_point,
+                weight_scale, weight_zero_point, output);
+
+  // methods
+  inline int GetInputChannels() const {
+    return weight.shape.shape[1];
+  }
+
+  inline bool IsDepthwiseConv() const {
+    return groups > 1 && groups == output_channels && GetInputChannels() == 1;
+  }
+
+  inline bool IsGroupConv() const {
+    return groups > 1 && !IsDepthwiseConv();
+  }
+
+  inline bool IsPointwiseConv() const {
+    return groups == 1;
+  }
+};
+
+struct QuantizedTransConv2d {
+  Dilations dilations;
+  Padding padding;
+  Strides strides;
+
+  int groups;
+  int output_channels;
+
+  // inputs
+  Tensor input;
+  Tensor weight;
+
+  Tensor input_scale;
+  Tensor input_zero_point;
+  Tensor weight_scale;
+  Tensor weight_zero_point;
+
+  // outputs
+  Tensor output;
+
+  NOP_STRUCTURE(QuantizedTransConv2d, dilations, padding, strides, groups,
                 output_channels, input, weight, input_scale, input_zero_point,
                 weight_scale, weight_zero_point, output);
 
@@ -456,7 +517,8 @@ struct Graph {
                        QuantizedAdd, QuantizedMul, Requantize, BiasAdd, Cast,
                        Pad, Int8VecConstant, Upsampling, OutputNode, MaxPool2d,
                        LeakyReLU, SiLU, HSwish, Fc, AvgPooling2d, Mean, Concatenate,
-                       UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh>
+                       UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh,
+                       TransConv2d, QuantizedTransConv2d>
       Operator;
 
   std::vector<Operator> operators;

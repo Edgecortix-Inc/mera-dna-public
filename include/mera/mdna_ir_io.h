@@ -134,8 +134,38 @@ inline std::ostream& operator<<(std::ostream& os, const Conv2d& n) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const TransConv2d& n) {
+  os << "TransConv2d(input=" << n.input.id << ", weights=" << n.weight.id
+     << ", output=" << n.output.id;
+  os << ", dilations=[h=" << n.dilations.h << ",w" << n.dilations.w << "]";
+  os << ", pad=[t=" << n.padding.top << ",b=" << n.padding.bottom
+     << ",l=" << n.padding.left << ",r=" << n.padding.right << "]";
+  os << ", srides=[h=" << n.strides.h << ",w=" << n.strides.w << "]";
+  os << ", groups=" << n.groups;
+  os << ", outputChannels=" << n.output_channels;
+  os << ")";
+  return os;
+}
+
 inline std::ostream& operator<<(std::ostream& os, const QuantizedConv2d& n) {
   os << "QuantizedConv2d(input=" << n.input.id << ", weights=" << n.weight.id
+     << ", output=" << n.output.id;
+  os << ", dilations=[h=" << n.dilations.h << ",w" << n.dilations.w << "]";
+  os << ", pad=[t=" << n.padding.top << ",b=" << n.padding.bottom
+     << ",l=" << n.padding.left << ",r=" << n.padding.right << "]";
+  os << ", srides=[h=" << n.strides.h << ",w=" << n.strides.w << "]";
+  os << ", groups=" << n.groups;
+  os << ", outputChannels=" << n.output_channels;
+  os << ", input_scale=" << n.input_scale.id;
+  os << ", input_zero_point=" << n.input_zero_point.id;
+  os << ", weight_scale=" << n.weight_scale.id;
+  os << ", weight_zero_point=" << n.weight_zero_point.id;
+  os << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const QuantizedTransConv2d& n) {
+  os << "QuantizedTransConv2d(input=" << n.input.id << ", weights=" << n.weight.id
      << ", output=" << n.output.id;
   os << ", dilations=[h=" << n.dilations.h << ",w" << n.dilations.w << "]";
   os << ", pad=[t=" << n.padding.top << ",b=" << n.padding.bottom
