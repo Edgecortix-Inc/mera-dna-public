@@ -25,7 +25,7 @@
 namespace mera {
 namespace ir {
 
-enum class DataType { UInt8, Int8, Int32, Float32 };
+enum class DataType { UInt8, Int8, Int32, Float32, BrainFloat16 };
 
 static constexpr struct {
   DataType t;
@@ -35,6 +35,7 @@ static constexpr struct {
     {DataType::Int8, "Int8"},
     {DataType::Int32, "Int32"},
     {DataType::Float32, "Float32"},
+    {DataType::BrainFloat16, "BrainFloat16"}
 };
 
 struct Shape {

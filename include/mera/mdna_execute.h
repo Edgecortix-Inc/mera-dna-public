@@ -25,20 +25,18 @@ namespace mera {
 namespace execute {
 
 struct ExecutorMetrics {
+  enum class MetricsType {
+    RUNTIME, POWER
+  };
+
   ExecutorMetrics() {}
-  // Compatibility constructor
-  ExecutorMetrics(uint64_t elapsed_latency);
   virtual ~ExecutorMetrics() {}
 
   // Method for serializing up to TVM
-  const std::string AsString(void) const;
-
-  // Add each metric
-  void Add(const std::string name, uint64_t value);
-  void Add(std::initializer_list<std::pair<const std::string, uint64_t>> list);
-
- private:
-  std::map<const std::string, uint64_t> metrics_;
+  const std::string AsString(MetricsType type) const;
+ protected:
+  std::map<const std::string, std::string> metrics_;
+  std::map<std::string, MetricsType> metric_types_;
 };
 
 class Executor {
@@ -48,8 +46,18 @@ class Executor {
                               std::vector<void*>& args) const = 0;
 };
 
+enum class DeviceRunTarget {
+  NONE = 0, /* Running on host */
+  SAKURA_1 = 1,
+  XILINX_U50 = 2,
+  INTEL_IA420 = 3,
+  ACHRONIX = 4
+};
+
+std::ostream &operator<<(std::ostream &os, const DeviceRunTarget &t);
+
 std::unique_ptr<Executor> CreateExecutor(
-    const std::vector<uint8_t>& serialized_module);
+    const std::vector<uint8_t>& serialized_module, DeviceRunTarget device_run_target);
 
 ExecutorMetrics Execute(const Executor* executor, const std::string& function,
                         std::vector<void*>& args);
