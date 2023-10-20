@@ -50,12 +50,16 @@ inline std::ostream& operator<<(std::ostream& os, const DataType& n) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const Layout& n) {
+  return os << n.AsStr();
+}
+
 inline std::ostream& operator<<(std::ostream& os, const Shape& n) {
   os << "shape(rank=" << n.rank << ", dimensions=[";
   for (auto it = n.shape.begin(); it != n.shape.end(); ++it) {
     os << *it << (std::next(it) != n.shape.end() ? "x" : "]");
   }
-  os << ", size=" << n.size << ")";
+  os << ", size=" << n.size << ", layout=" << n.layout << ")";
   return os;
 }
 
@@ -329,6 +333,33 @@ inline std::ostream& operator<<(std::ostream& os, const HSwishFp &n) {
 inline std::ostream& operator<<(std::ostream& os, const HardTanh &n) {
   os << "HardTanh(input=" << n.input.id << ", output=" << n.output.id
     << ", min_val=" << n.min_val << ", max_val=" << n.max_val << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const GELU &n) {
+  os << "GELU(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Sigmoid &n) {
+  os << "Sigmoid(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const LayerNorm &n) {
+  os << "LayerNorm(input=" << n.input.id << ", weight=" << n.weight.id << ", bias=" << n.bias.id
+    << ", has_bias=" << n.has_bias << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const MatMul &n) {
+  os << "MatMul(input=" << n.input.id << ", data=" << n.data.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Attention &n) {
+  os << "Attention(input_value=" << n.input_value.id << ", input_query=" << n.input_query.id
+    << ", input_key=" << n.input_key.id << ", output=" << n.output.id << ")";
   return os;
 }
 

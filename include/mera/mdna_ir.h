@@ -21,29 +21,11 @@
 #include <vector>
 
 #include "nop/serializer.h"
+#include "ir/shape.h"
+#include "ir/type.h"
 
 namespace mera {
 namespace ir {
-
-enum class DataType { UInt8, Int8, Int32, Float32, BrainFloat16 };
-
-static constexpr struct {
-  DataType t;
-  const char* name;
-} type_map[] = {
-    {DataType::UInt8, "UInt8"},
-    {DataType::Int8, "Int8"},
-    {DataType::Int32, "Int32"},
-    {DataType::Float32, "Float32"},
-    {DataType::BrainFloat16, "BrainFloat16"}
-};
-
-struct Shape {
-  std::vector<int> shape;
-  int rank;
-  int size;
-  NOP_STRUCTURE(Shape, shape, rank, size);
-};
 
 // attributes
 struct Dilations {
@@ -185,6 +167,27 @@ struct Conv2d {
 
   NOP_STRUCTURE(Conv2d, dilations, padding, strides, groups, output_channels,
                 input, weight, output);
+
+  // methods
+  inline int GetInputChannels() const {
+    return weight.shape.shape[1];
+  }
+
+  inline bool IsDepthwiseConv() const {
+    return groups > 1 && groups == output_channels && GetInputChannels() == 1;
+  }
+
+  inline bool IsGroupConv() const {
+    return groups > 1 && !IsDepthwiseConv();
+  }
+
+  inline bool IsPointwiseConv() const {
+    return groups == 1;
+  }
+};
+
+struct Conv1d : public Conv2d {
+  NOP_STRUCTURE(Conv1d, dilations, padding, strides, groups, output_channels, input, weight, output);
 };
 
 struct TransConv2d {
@@ -204,6 +207,23 @@ struct TransConv2d {
 
   NOP_STRUCTURE(TransConv2d, dilations, padding, strides, groups, output_channels,
                 input, weight, output);
+
+  // methods
+  inline int GetInputChannels() const {
+    return weight.shape.shape[1];
+  }
+
+  inline bool IsDepthwiseConv() const {
+    return groups > 1 && groups == output_channels && GetInputChannels() == 1;
+  }
+
+  inline bool IsGroupConv() const {
+    return groups > 1 && !IsDepthwiseConv();
+  }
+
+  inline bool IsPointwiseConv() const {
+    return groups == 1;
+  }
 };
 
 struct Clip {
@@ -507,6 +527,54 @@ struct Mean {
                 output_scale, output_zero_point, output);
 };
 
+struct GELU {
+  Tensor input;
+  Tensor output;
+  NOP_STRUCTURE(GELU, input, output);
+};
+
+struct Sigmoid {
+  Tensor input;
+  Tensor output;
+  NOP_STRUCTURE(Sigmoid, input, output);
+};
+
+struct LayerNorm {
+  Tensor input;
+  Tensor weight;
+  Tensor bias;
+  bool has_bias;
+  Tensor output;
+  NOP_STRUCTURE(LayerNorm, input, weight, bias, has_bias, output);
+};
+
+struct MatMul {
+  Tensor input;
+  Tensor data;
+  Tensor output;
+  NOP_STRUCTURE(MatMul, input, data, output);
+};
+
+struct Attention {
+  Tensor input_value;
+  Tensor input_query;
+  Tensor input_key;
+
+  int dim;
+  int num_heads;
+  int seq_length;
+  int query_length;
+  int slice_value;
+  int slice_query;
+  int slice_key;
+  bool has_mask;
+  bool constant_query;
+
+  Tensor output;
+  NOP_STRUCTURE(Attention, input_value, input_query, input_key, dim, num_heads,
+    seq_length, query_length, slice_value, slice_query, slice_key, has_mask, constant_query, output);
+};
+
 struct OutputNode {
   std::vector<Tensor> outputs;
   NOP_STRUCTURE(OutputNode, outputs);
@@ -518,8 +586,8 @@ struct Graph {
                        QuantizedAdd, QuantizedMul, Requantize, BiasAdd, Cast,
                        Pad, Int8VecConstant, Upsampling, OutputNode, MaxPool2d,
                        LeakyReLU, SiLU, HSwish, Fc, AvgPooling2d, Mean, Concatenate,
-                       UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh,
-                       TransConv2d, QuantizedTransConv2d>
+                       UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh, Sigmoid,
+                       TransConv2d, QuantizedTransConv2d, GELU, LayerNorm, MatMul, Attention, Conv1d>
       Operator;
 
   std::vector<Operator> operators;
@@ -537,22 +605,19 @@ struct Graph {
     operators.emplace_back(OutputNode{output_tensors});
   }
 
-  Tensor AddFloatVec(const std::vector<float>& values) {
+  Tensor AddFloatVec(const std::vector<float>& values, const Layout &layout) {
     int size = int(values.size());
-    return Add<FloatVecConstant>("FloatVecConstant", DataType::Float32,
-                                 {{size}, 1, size}, values);
+    return Add<FloatVecConstant>("FloatVecConstant", DataType::Float32, Shape{{size}, layout}, values);
   }
 
-  Tensor AddInt32Vec(const std::vector<int32_t>& values) {
+  Tensor AddInt32Vec(const std::vector<int32_t>& values, const Layout &layout) {
     int size = int(values.size());
-    return Add<Int32VecConstant>("Int32VecConstant", DataType::Int32,
-                                 {{size}, 1, size}, values);
+    return Add<Int32VecConstant>("Int32VecConstant", DataType::Int32, Shape{{size}, layout}, values);
   }
 
-  Tensor AddInt8Vec(const std::vector<int8_t>& values) {
+  Tensor AddInt8Vec(const std::vector<int8_t>& values, const Layout &layout) {
     int size = int(values.size());
-    return Add<Int8VecConstant>("Int8VecConstant", DataType::Int8,
-                                {{size}, 1, size}, values);
+    return Add<Int8VecConstant>("Int8VecConstant", DataType::Int8, Shape{{size}, layout}, values);
   }
 
   NOP_STRUCTURE(Graph, operators, qtz_info);
