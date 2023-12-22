@@ -74,8 +74,6 @@ namespace layout {
   const static Layout NHWC{{'N', 'H', 'W', 'C'}};
   const static Layout NCHW{{'N', 'C', 'H', 'W'}};
   const static Layout NHW{{'N', 'H', 'W'}};
-  const static Layout NCW{{'N', 'C', 'W'}};
-  const static Layout OIW{{'O', 'I', 'W'}};
 } // namespace layout
 
 

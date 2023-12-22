@@ -186,10 +186,6 @@ struct Conv2d {
   }
 };
 
-struct Conv1d : public Conv2d {
-  NOP_STRUCTURE(Conv1d, dilations, padding, strides, groups, output_channels, input, weight, output);
-};
-
 struct TransConv2d {
   Dilations dilations;
   Padding padding;
@@ -575,6 +571,42 @@ struct Attention {
     seq_length, query_length, slice_value, slice_query, slice_key, has_mask, constant_query, output);
 };
 
+struct ConvertType {
+  Tensor input;
+
+  Tensor scale;
+  Tensor zero_point;
+
+  Tensor output;
+  NOP_STRUCTURE(ConvertType, input, scale, zero_point, output);
+};
+
+struct TransposeAxisData {
+  int size{0};
+  int pre_pad{0};
+  int post_pad{0};
+
+  TransposeAxisData(int size, int pre_pad, int post_pad): size(size), pre_pad(pre_pad), post_pad(post_pad) {}
+  TransposeAxisData(int size): TransposeAxisData(size, 0, 0) {};
+  TransposeAxisData() = default;
+
+  NOP_STRUCTURE(TransposeAxisData, size, pre_pad, post_pad);
+
+  int OutputSize() const {
+    return pre_pad + size + post_pad;
+  }
+};
+
+struct Transpose {
+  Tensor input;
+
+  std::vector<TransposeAxisData> dims;
+  std::vector<int> perm;
+
+  Tensor output;
+  NOP_STRUCTURE(Transpose, input, dims, perm, output);
+};
+
 struct OutputNode {
   std::vector<Tensor> outputs;
   NOP_STRUCTURE(OutputNode, outputs);
@@ -587,7 +619,7 @@ struct Graph {
                        Pad, Int8VecConstant, Upsampling, OutputNode, MaxPool2d,
                        LeakyReLU, SiLU, HSwish, Fc, AvgPooling2d, Mean, Concatenate,
                        UpsamplingFp, LeakyReLUFp, SiLUFp, HSwishFp, HardTanh, Sigmoid,
-                       TransConv2d, QuantizedTransConv2d, GELU, LayerNorm, MatMul, Attention, Conv1d>
+                       TransConv2d, QuantizedTransConv2d, GELU, LayerNorm, MatMul, Attention, ConvertType, Transpose>
       Operator;
 
   std::vector<Operator> operators;

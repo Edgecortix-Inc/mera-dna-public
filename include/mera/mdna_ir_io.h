@@ -363,6 +363,20 @@ inline std::ostream& operator<<(std::ostream& os, const Attention &n) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const ir::ConvertType &n) {
+  os << "ConvertType(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream &operator<<(std::ostream& os, const ir::Transpose& n) {
+  os << "Transpose(input=" << n.input.id << ", output=" << n.output.id << ")";
+  return os;
+}
+
+inline std::ostream &operator<<(std::ostream& os, const ir::TransposeAxisData& n) {
+  return os << "(" << n.pre_pad << "," << n.size << "," << n.post_pad << ")";
+}
+
 inline std::ostream& operator<<(std::ostream& os, const OutputNode& n) {
   os << "OutputNode:output ids=";
   for (auto tensor : n.outputs) {
